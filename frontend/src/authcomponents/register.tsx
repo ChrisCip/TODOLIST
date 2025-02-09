@@ -19,6 +19,8 @@ import {
 import { Link } from "react-router-dom";
 import { api } from "../api/axios";
 
+console.log('API URL:', import.meta.env.VITE_API_URL + '/auth/signup');
+
 export default function Register() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -43,7 +45,7 @@ export default function Register() {
     }
 
     try {
-      await api.post('/auth/signup', {
+      await api.post('/app/auth/signup', {
         name,
         email,
         password,
