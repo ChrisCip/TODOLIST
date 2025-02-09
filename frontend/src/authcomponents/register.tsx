@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Box,
   Button,
   Card,
   CardBody,
@@ -44,7 +43,7 @@ export default function Register() {
     }
 
     try {
-      const response = await api.post('/auth/signup', {
+      await api.post('/auth/signup', {
         name,
         email,
         password,

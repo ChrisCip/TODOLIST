@@ -25,11 +25,6 @@ import {
 } from "@chakra-ui/react";
 import { api } from "../api/axios";
 
-interface LoginFormData {
-  email: string;
-  password: string;
-}
-
 export default function Login() {
   // Hooks for navigation and authentication
   const navigate = useNavigate();
