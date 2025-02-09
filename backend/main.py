@@ -13,8 +13,7 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        FRONTEND_URL,
-        "https://todolist-sepia-seven-38.vercel.app",  # Tu dominio de Vercel
+        "https://todolist-sepia-seven-38.vercel.app",  # Tu dominio de Vercel (sin /login)
         "http://localhost:5173",  # Para desarrollo local
     ],
     allow_credentials=True,
