@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import JSONResponse
 import os
 from dotenv import load_dotenv
 from app.schemas import UserCreate, User, Token
@@ -31,6 +32,22 @@ app.add_middleware(
 @app.get("/")
 async def read_root():
     return {"status": "ok"}
+
+@app.get("/health")
+async def health_check():
+    try:
+        # Intenta conectarse a la base de datos
+        db = Database.get_db()
+        await db.command("ping")
+        return JSONResponse(
+            status_code=200,
+            content={"status": "healthy", "database": "connected"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "unhealthy", "error": str(e)}
+        )
 
 @app.post("/auth/signup",
     response_model=User,
@@ -65,4 +82,14 @@ async def signup(user: UserCreate):
 
 # Importar el resto de las rutas
 from app.main import app as app_router
-app.include_router(app_router) 
+app.include_router(app_router)
+
+@app.on_event("startup")
+async def startup_db_client():
+    """Initialize database connection."""
+    await Database.connect_to_database()
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    """Close database connection."""
+    await Database.close_database_connection() 

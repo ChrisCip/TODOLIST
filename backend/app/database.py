@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class Database:
     client: AsyncIOMotorClient = None
+    db = None
     
     @classmethod
     async def connect_to_database(cls):
@@ -28,30 +29,23 @@ class Database:
             ServerSelectionTimeoutError: If MongoDB server is unreachable
         """
         try:
-            cls.client = AsyncIOMotorClient(
-                settings.mongodb_url,
-                serverSelectionTimeoutMS=5000  # 5 second timeout
-            )
-            
-            # Verify connection
-            await cls.client.admin.command('ping')
-            logger.info("✅ Successfully connected to MongoDB")
+            cls.client = AsyncIOMotorClient(settings.mongodb_url)
+            cls.db = cls.client[settings.database_name]
+            await cls.db.command("ping")
+            logger.info("✅ Connected to MongoDB")
             
             # Create indexes
             await cls.create_indexes()
             
-        except (ConnectionFailure, ServerSelectionTimeoutError) as e:
-            logger.error(f"❌ Failed to connect to MongoDB: {str(e)}")
-            raise
         except Exception as e:
-            logger.error(f"❌ Unexpected error while connecting to MongoDB: {str(e)}")
-            raise
+            logger.error(f"❌ Failed to connect to MongoDB: {str(e)}")
+            raise e
 
     @classmethod
     async def close_database_connection(cls):
         """Close database connection safely."""
         try:
-            if cls.client is not None:
+            if cls.client:
                 cls.client.close()
                 logger.info("✅ Successfully closed MongoDB connection")
         except Exception as e:
@@ -69,16 +63,14 @@ class Database:
             - Compound index on tasks for filtering
         """
         try:
-            db = cls.client[settings.database_name]
-            
             # Create unique index for email in users collection
-            await db.users.create_index("email", unique=True)
+            await cls.db.users.create_index("email", unique=True)
             
             # Create index for user_id in tasks collection
-            await db.tasks.create_index("user_id")
+            await cls.db.tasks.create_index("user_id")
             
             # Create compound index for task filtering
-            await db.tasks.create_index([
+            await cls.db.tasks.create_index([
                 ("user_id", 1),
                 ("completed", 1),
                 ("due_date", 1)
@@ -90,7 +82,7 @@ class Database:
             raise
 
     @classmethod
-    def get_db(cls) -> AsyncIOMotorClient:
+    def get_db(cls):
         """
         Get database client instance.
         
@@ -100,10 +92,10 @@ class Database:
         Raises:
             ConnectionError: If database client is not initialized
         """
-        if cls.client is None:
+        if cls.db is None:
             logger.error("❌ Database client not initialized")
             raise ConnectionError("Database client not initialized")
-        return cls.client[settings.database_name]
+        return cls.db
 
     @classmethod
     async def verify_task_ownership(cls, task_id: str, user_id: str) -> bool:
