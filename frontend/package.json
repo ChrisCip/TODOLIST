@@ -38,4 +38,5 @@
     "typescript-eslint": "^8.22.0",
     "vite": "^6.1.0"
   }
+  
 }

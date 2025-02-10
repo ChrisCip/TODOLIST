@@ -17,9 +17,9 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-import { api } from "../api/axios";
+import { api } from "../api/api";
 
-console.log('API URL:', import.meta.env.VITE_API_URL + '/auth/signup');
+console.log('API URL:', import.meta.env.BACKEND_URL + '/auth/signup');
 
 export default function Register() {
   const navigate = useNavigate();

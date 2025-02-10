@@ -23,7 +23,7 @@ import {
   Container,
   Heading,
 } from "@chakra-ui/react";
-import { api } from "../api/axios";
+import { api } from "../api/api";
 
 export default function Login() {
   // Hooks for navigation and authentication

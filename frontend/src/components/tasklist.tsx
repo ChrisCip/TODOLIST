@@ -25,7 +25,7 @@ import {
 } from "@chakra-ui/react";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { Task, TaskCreate } from "../types/task";
-import { api } from "../api/axios";
+import { api } from "../api/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function TaskList() {
