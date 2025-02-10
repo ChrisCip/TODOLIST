@@ -14,9 +14,7 @@ load_dotenv()
 
 app = FastAPI()
 
-# Obtener la URL del frontend desde las variables de entorno
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
-
+# Configurar CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
