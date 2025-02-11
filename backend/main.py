@@ -32,20 +32,8 @@ async def read_root():
     return {"status": "ok"}
 
 @app.get("/health")
-async def health_check():
-    try:
-        # Intenta conectarse a la base de datos
-        db = Database.get_db()
-        await db.command("ping")
-        return JSONResponse(
-            status_code=200,
-            content={"status": "healthy", "database": "connected"}
-        )
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"status": "unhealthy", "error": str(e)}
-        )
+def health():
+    return {"status": "ok"}
 
 @app.post("/auth/signup",
     response_model=User,

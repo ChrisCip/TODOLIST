@@ -52,6 +52,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/health")
+def health():
+    return {"status": "OK"}
+
+
 @app.on_event("startup")
 async def startup_db_client():
     """Initialize database connection."""
