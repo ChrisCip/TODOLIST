@@ -1,4 +1,9 @@
 import { useState } from "react";
+interface ValidationError {
+  loc: string[];
+  msg: string;
+  type: string;
+}
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -21,15 +26,23 @@ import { api } from "../api/api";
 
 console.log('API URL:', import.meta.env.BACKEND_URL + '/auth/signup');
 
+interface FormErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  general?: string;
+}
+
 export default function Register() {
   const navigate = useNavigate();
   const toast = useToast();
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
+    setErrors({});
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -39,7 +52,7 @@ export default function Register() {
     const confirmPassword = formData.get("confirmPassword") as string;
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setErrors({ confirmPassword: "Passwords do not match" });
       setIsLoading(false);
       return;
     }
@@ -52,23 +65,41 @@ export default function Register() {
       });
 
       toast({
-        title: "Account created.",
-        description: "You can now login with your credentials.",
+        title: "Success!",
+        description: "Account created successfully.",
         status: "success",
-        duration: 5000,
-        isClosable: true,
+        duration: 3000,
       });
-
+      
       navigate("/login");
     } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || "Registration failed";
-      setError(errorMessage);
+      const response = err.response?.data;
+      
+      // Handle validation errors from FastAPI
+      if (err.response?.status === 422 && Array.isArray(response?.detail)) {
+        const newErrors: FormErrors = {};
+        response.detail.forEach((error: ValidationError) => {
+          const field = error.loc[1];
+          newErrors[field as keyof FormErrors] = error.msg;
+        });
+        setErrors(newErrors);
+      } 
+      // Handle duplicate email
+      else if (err.response?.status === 400) {
+        setErrors({ email: response?.message || "Email already registered" });
+      }
+      // Handle other errors
+      else {
+        setErrors({ 
+          general: response?.message || "An error occurred during registration" 
+        });
+      }
+
       toast({
         title: "Registration failed",
-        description: errorMessage,
+        description: errors.general || "Please check the form for errors",
         status: "error",
         duration: 5000,
-        isClosable: true,
       });
     } finally {
       setIsLoading(false);
@@ -84,42 +115,66 @@ export default function Register() {
         <CardBody>
           <form onSubmit={handleSubmit}>
             <VStack spacing={4}>
-              {error && (
+              {errors.general && (
                 <Alert status="error">
                   <AlertIcon />
-                  {error}
+                  {errors.general}
                 </Alert>
               )}
-              <FormControl isRequired>
+              <FormControl isRequired isInvalid={!!errors.name}>
                 <FormLabel>Name</FormLabel>
                 <Input
                   name="name"
                   placeholder="John Doe"
                 />
+                {errors.name && (
+                  <Alert status="error" mt={2} p={2} size="sm">
+                    <AlertIcon />
+                    {errors.name}
+                  </Alert>
+                )}
               </FormControl>
-              <FormControl isRequired>
+              <FormControl isRequired isInvalid={!!errors.email}>
                 <FormLabel>Email</FormLabel>
                 <Input
                   name="email"
                   type="email"
                   placeholder="john@example.com"
                 />
+                {errors.email && (
+                  <Alert status="error" mt={2} p={2} size="sm">
+                    <AlertIcon />
+                    {errors.email}
+                  </Alert>
+                )}
               </FormControl>
-              <FormControl isRequired>
+              <FormControl isRequired isInvalid={!!errors.password}>
                 <FormLabel>Password</FormLabel>
                 <Input
                   name="password"
                   type="password"
                   placeholder="********"
                 />
+                {errors.password && (
+                  <Alert status="error" mt={2} p={2} size="sm">
+                    <AlertIcon />
+                    {errors.password}
+                  </Alert>
+                )}
               </FormControl>
-              <FormControl isRequired>
+              <FormControl isRequired isInvalid={!!errors.confirmPassword}>
                 <FormLabel>Confirm Password</FormLabel>
                 <Input
                   name="confirmPassword"
                   type="password"
                   placeholder="********"
                 />
+                {errors.confirmPassword && (
+                  <Alert status="error" mt={2} p={2} size="sm">
+                    <AlertIcon />
+                    {errors.confirmPassword}
+                  </Alert>
+                )}
               </FormControl>
               <Button
                 type="submit"

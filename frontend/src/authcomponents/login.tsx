@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { ValidationError } from "../types/errors";
 import {
   Button,
   Card,
@@ -25,33 +26,47 @@ import {
 } from "@chakra-ui/react";
 import { api } from "../api/api";
 
+interface FormErrors {
+  email?: string;
+  password?: string;
+  general?: string;
+}
+
 export default function Login() {
-  // Hooks for navigation and authentication
   const navigate = useNavigate();
   const { login } = useAuth();
-
-  // State management
-  const [error, setError] = useState<string>("");
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
 
-  /**
-   * Handles form submission for user login
-   * @param e - Form submission event
-   */
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear error when user starts typing
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
+    setErrors({});
     setIsLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
 
     try {
       const response = await api.post('/auth/login', 
         new URLSearchParams({
-          username: email,
-          password: password,
+          username: formData.email,
+          password: formData.password,
         }),
         {
           headers: {
@@ -60,10 +75,27 @@ export default function Login() {
         }
       );
 
-      login(response.data.access_token, { email, _id: "", name: "" });
+      login(response.data.access_token, { email: formData.email, _id: "", name: "" });
       navigate("/tasks");
-    } catch (err) {
-      setError("Invalid email or password");
+    } catch (err: any) {
+      const response = err.response?.data;
+      
+      if (err.response?.status === 401) {
+        setErrors({ 
+          general: "Invalid email or password" 
+        });
+      } else if (err.response?.status === 422 && Array.isArray(response?.detail)) {
+        const newErrors: FormErrors = {};
+        response.detail.forEach((error: ValidationError) => {
+          const field = error.loc[1];
+          newErrors[field as keyof FormErrors] = error.msg;
+        });
+        setErrors(newErrors);
+      } else {
+        setErrors({ 
+          general: response?.message || "Login failed. Please try again." 
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -77,46 +109,57 @@ export default function Login() {
         </CardHeader>
         <CardBody>
           <form onSubmit={handleSubmit}>
-            <VStack spacing={4}>  {/* Using spacing instead of gap for Chakra UI */}
-              {/* Error Alert */}
-              {error && (
+            <VStack spacing={4}>
+              {errors.general && (
                 <Alert status="error">
                   <AlertIcon />
-                  {error}
+                  {errors.general}
                 </Alert>
               )}
 
-              {/* Email Input */}
-              <FormControl isRequired>
+              <FormControl isRequired isInvalid={!!errors.email}>
                 <FormLabel>Email</FormLabel>
                 <Input
                   name="email"
                   type="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="your@email.com"
                 />
+                {errors.email && (
+                  <Alert status="error" mt={2} p={2} size="sm">
+                    <AlertIcon />
+                    {errors.email}
+                  </Alert>
+                )}
               </FormControl>
 
-              {/* Password Input */}
-              <FormControl isRequired>
+              <FormControl isRequired isInvalid={!!errors.password}>
                 <FormLabel>Password</FormLabel>
                 <Input
                   name="password"
                   type="password"
+                  value={formData.password}
+                  onChange={handleChange}
                   placeholder="********"
                 />
+                {errors.password && (
+                  <Alert status="error" mt={2} p={2} size="sm">
+                    <AlertIcon />
+                    {errors.password}
+                  </Alert>
+                )}
               </FormControl>
 
-              {/* Submit Button */}
               <Button
                 type="submit"
                 colorScheme="blue"
                 width="full"
-                isLoading={isLoading}  // Changed from loading to isLoading
+                isLoading={isLoading}
               >
                 Sign In
               </Button>
 
-              {/* Registration Link */}
               <Text fontSize="sm">
                 Don't have an account?{" "}
                 <Link to="/register" style={{ color: "blue" }}>
