@@ -31,7 +31,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",  # Swagger UI endpoint
     redoc_url="/redoc",  # ReDoc endpoint
-    openapi_version="3.0.2",  # Usar una versión más compatible de OpenAPI
+    openapi_version="3.0.2", 
     openapi_tags=[
         {
             "name": "Authentication",
@@ -96,7 +96,7 @@ async def signup(user: UserCreate):
         user_dict = user.model_dump(exclude={"password"})
         user_dict.update({
             "password": hashed_password,
-            "_id": str(ObjectId()),  # Convertir a string inmediatamente
+            "_id": str(ObjectId()),  # Convert to string inmediately
             "created_at": datetime.utcnow()
         })
         
@@ -104,7 +104,7 @@ async def signup(user: UserCreate):
         
         # Return user without password
         created_user = {
-            "_id": user_dict["_id"],  # Ya es string
+            "_id": user_dict["_id"],  # Its string
             "name": user_dict["name"],
             "email": user_dict["email"]
         }
