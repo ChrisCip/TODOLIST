@@ -365,6 +365,6 @@ async def general_exception_handler(request, exc):
             "success": False,
             "message": "An unexpected error occurred",
             "detail": str(exc) if settings.debug else "Internal server error",
-            "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR
+            "status_code ": status.HTTP_500_INTERNAL_SERVER_ERROR
         }
     )
