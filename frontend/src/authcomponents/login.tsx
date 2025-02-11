@@ -105,7 +105,7 @@ export default function Login() {
     <Container maxW="container.sm" py={10}>
       <Card>
         <CardHeader>
-          <Heading size="lg" textAlign="center">Welcome Back</Heading>
+          <Heading size="lg" textAlign="center">TODO APP</Heading>
         </CardHeader>
         <CardBody>
           <form onSubmit={handleSubmit}>
