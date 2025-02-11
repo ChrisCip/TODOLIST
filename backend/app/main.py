@@ -26,4 +26,5 @@ app.add_middleware(
 async def read_root():
     return {"status": "ok"}
 
-# ... resto de tus rutas 
+
+# ... resto de tus rutas lol
