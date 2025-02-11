@@ -5,12 +5,12 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import timedelta, datetime
 from bson import ObjectId
-from .config import settings
-from .schemas import UserCreate, User, Task, TaskCreate, Token
-from .auth import get_password_hash, verify_password, create_access_token, get_current_user
+from app.config import settings
+from app.schemas import UserCreate, User, Task, TaskCreate, Token
+from app.auth import get_password_hash, verify_password, create_access_token, get_current_user
 import logging
 from typing import Dict, Any, Optional
-from .database import Database
+from app.database import Database
 from pymongo.errors import DuplicateKeyError, OperationFailure
 import traceback
 from fastapi.exceptions import RequestValidationError
