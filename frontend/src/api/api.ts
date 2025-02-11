@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
+  baseURL: 'https://todolist-production-454d.up.railway.app',  // URL del backend en Railway
   withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
