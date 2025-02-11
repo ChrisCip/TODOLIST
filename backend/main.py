@@ -9,6 +9,7 @@ from app.auth import get_password_hash, create_access_token
 from app.database import Database
 from datetime import datetime
 from bson import ObjectId
+import uvicorn
 
 load_dotenv()
 
@@ -29,11 +30,11 @@ app.add_middleware(
 # Ruta de prueba para el healthcheck
 @app.get("/")
 async def read_root():
-    return {"status": "ok"}
+    JSONResponse(status_code=200, content={"status":"OK"})
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+@app.get("/health", include_in_schema=False)
+async def health():
+    return JSONResponse(status_code=200, content={"status":"OK"})
 
 @app.post("/auth/signup",
     response_model=User,
@@ -79,3 +80,7 @@ async def startup_db_client():
 async def shutdown_db_client():
     """Close database connection."""
     await Database.close_database_connection() 
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)
