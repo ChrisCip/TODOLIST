@@ -68,8 +68,8 @@ async def signup(user: UserCreate):
         )
 
 # Importar el resto de las rutas
-from app.main import app as app_router
-app.include_router(app_router)
+# from app.main import app as app_router
+# app.include_router(app_router)
 
 @app.on_event("startup")
 async def startup_db_client():
