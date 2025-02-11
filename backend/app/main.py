@@ -15,6 +15,8 @@ from pymongo.errors import DuplicateKeyError, OperationFailure
 import traceback
 from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
+import uvicorn
+import os
 
 # Configure logging
 logging.basicConfig(
@@ -53,8 +55,8 @@ app.add_middleware(
 )
 
 
-@app.get("/health")
-def health():
+@app.get("/health", include_in_schema=False)
+async def health():
     return {"status": "OK"}
 
 
@@ -367,3 +369,7 @@ async def general_exception_handler(request, exc):
             "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR
         }
     )
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
